@@ -9,7 +9,7 @@
 namespace ud2::luogu3 {
   constexpr auto max_states = 100000U;
   constexpr auto max_stack_size = 1000000U;
-  constexpr auto modulo = static_cast<std::uint_least64_t>(998244353);
+  constexpr auto modulo = UINT32_C(998244353);
 
   struct program {
     enum class stack {
@@ -20,7 +20,7 @@ namespace ud2::luogu3 {
 
     struct state_push {
       stack target;
-      std::uint_least64_t val;
+      std::uint_least32_t val;
       std::size_t next;
     };
 

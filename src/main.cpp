@@ -1,6 +1,4 @@
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include <config.h>
 #include <argagg/argagg.hpp>
 #include <fstream>
 #include <iostream>
@@ -62,7 +60,7 @@ auto main(int argc, char* argv[]) -> int {
     return {filename, read_fully(in)};
   }(args.pos[0]);
   auto result = ud2::luogu3::compile(source);
-  bool error = ud2::luogu3::print_diagnostics(std::cerr, result.diags, filename, source.c_str());
+  auto error = ud2::luogu3::print_diagnostics(std::cerr, result.diags, filename, source.c_str());
   if (args["format"])
     result.prog.emit_source(std::cout);
   else

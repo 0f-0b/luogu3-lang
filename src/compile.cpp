@@ -103,7 +103,7 @@ namespace ud2::luogu3 {
               auto target = expect_stack(result, ptr, start);
               if (!target || !expect_space(result, ptr, start))
                 return std::nullopt;
-              std::uint_least64_t val;
+              std::uint_least32_t val;
               {
                 auto conv = std::from_chars(ptr, end, val);
                 if (conv.ec == std::errc::invalid_argument) {

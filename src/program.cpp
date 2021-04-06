@@ -122,7 +122,7 @@ namespace ud2::luogu3 {
           this->out
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
-            << "  *" << detail::c_name(s.target) << "_top++ = " << s.val << ";\n"
+            << "  *" << detail::c_name(s.target) << "_top++ = UINT32_C(" << s.val << ");\n"
             << "  goto state_" << s.next << ";\n";
         }
 
@@ -151,7 +151,7 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.from) << "_top == " << detail::c_name(s.from) << ")\n"
-            << "    return 2;\n"
+            << "    return 3;\n"
             << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.from) << "_top[-1];\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
@@ -162,8 +162,8 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (" << detail::c_name(s.left) << "_top[-1] + " << detail::c_name(s.right) << "_top[-1]) % " << modulo << ";\n"
+            << "    return 3;\n"
+            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) (((uint_least64_t) " << detail::c_name(s.left) << "_top[-1] + " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
         }
@@ -173,8 +173,8 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (" << modulo << " + " << detail::c_name(s.left) << "_top[-1] - " << detail::c_name(s.right) << "_top[-1]) % " << modulo << ";\n"
+            << "    return 3;\n"
+            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) ((UINT64_C(" << modulo << ") + " << detail::c_name(s.left) << "_top[-1] - " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
         }
@@ -184,8 +184,8 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (" << detail::c_name(s.left) << "_top[-1] * " << detail::c_name(s.right) << "_top[-1]) % " << modulo << ";\n"
+            << "    return 3;\n"
+            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) (((uint_least64_t) " << detail::c_name(s.left) << "_top[-1] * " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
         }
@@ -195,9 +195,9 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
-            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
             << "    return 3;\n"
+            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
+            << "    return 4;\n"
             << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.left) << "_top[-1] / " << detail::c_name(s.right) << "_top[-1];\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
@@ -208,9 +208,9 @@ namespace ud2::luogu3 {
             << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
             << "    return 1;\n"
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
-            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
             << "    return 3;\n"
+            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
+            << "    return 4;\n"
             << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.left) << "_top[-1] % " << detail::c_name(s.right) << "_top[-1];\n"
             << "  ++" << detail::c_name(s.target) << "_top;\n"
             << "  goto state_" << s.next << ";\n";
@@ -227,7 +227,7 @@ namespace ud2::luogu3 {
         auto operator()(state_less s) -> void {
           this->out
             << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
-            << "    return 2;\n"
+            << "    return 3;\n"
             << "  if (" << detail::c_name(s.left) << "_top[-1] < " << detail::c_name(s.right) << "_top[-1])\n"
             << "    goto state_" << s.consequent << ";\n"
             << "  else\n"
