@@ -1,10 +1,11 @@
 #include <config.h>
 #include <argagg/argagg.hpp>
+#include <cerrno>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <utility>
 #include "compile.hpp"
 
 template <typename CharT, typename Traits>
@@ -53,12 +54,20 @@ auto main(int argc, char* argv[]) -> int {
     std::cerr << help;
     return 2;
   }
-  auto [filename, source] = [](const char* filename) -> std::pair<const char*, std::string> {
-    if (strcmp(filename, "-") == 0)
-      return {"<stdin>", read_fully(std::cin)};
+  auto filename = args.pos[0];
+  std::string source;
+  errno = 0;
+  if (std::strcmp(filename, "-") == 0) {
+    filename = "<stdin>";
+    source = read_fully(std::cin);
+  } else {
     auto in = std::ifstream{filename};
-    return {filename, read_fully(in)};
-  }(args.pos[0]);
+    source = read_fully(in);
+  }
+  if (errno) {
+    std::cerr << filename << ": " << std::strerror(errno) << '\n';
+    return 1;
+  }
   auto result = ud2::luogu3::compile(source);
   auto error = ud2::luogu3::print_diagnostics(std::cerr, result.diags, filename, source.c_str());
   if (args["format"])

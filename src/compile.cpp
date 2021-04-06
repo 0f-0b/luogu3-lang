@@ -14,26 +14,36 @@ namespace ud2::luogu3 {
     }
 
     constexpr auto is_separator(unsigned char ch) noexcept -> bool {
-      return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\v' || ch == '\f' || ch == '\r';
+      return is_space(ch) || ch == '\n';
     }
 
-    auto expect_space(compile_result& result, const char*& ptr, const char* const& start) -> bool {
+    auto skip_space(const char*& ptr) -> void {
+      while (is_space(*ptr))
+        ++ptr;
+    }
+
+    auto skip_separator(const char*& ptr) -> void {
+      while (is_separator(*ptr))
+        ++ptr;
+    }
+
+    auto skip_line(const char*& ptr) -> void {
+      while (*ptr && *ptr++ != '\n') { }
+    }
+
+    auto expect_space(compile_result& result, const char*& ptr, const char* start) -> bool {
       if (*ptr && !is_separator(*ptr)) {
         result.diags.push_back({ptr - start, ptr - start, "expected whitespace"});
         return false;
       }
-      while (is_space(*ptr))
-        ++ptr;
+      skip_space(ptr);
       return true;
     }
 
-    auto expect_newline(compile_result& result, const char*& ptr, const char* const& start) -> bool {
-      while (*ptr) {
-        if (*ptr == '\n') {
-          ++ptr;
-          break;
-        }
-        if (!is_space(*ptr)) {
+    auto expect_newline(compile_result& result, const char*& ptr, const char* start) -> bool {
+      skip_space(ptr);
+      if (*ptr) {
+        if (*ptr != '\n') {
           result.diags.push_back({ptr - start, ptr - start, "expected newline"});
           return false;
         }
@@ -42,7 +52,16 @@ namespace ud2::luogu3 {
       return true;
     }
 
-    auto expect_stack(compile_result& result, const char*& ptr, const char* const& start) -> std::optional<program::stack> {
+    auto expect_eof(compile_result& result, const char*& ptr, const char* start) -> bool {
+      skip_separator(ptr);
+      if (*ptr) {
+        result.diags.push_back({ptr - start, ptr - start, "expected end of file"});
+        return false;
+      }
+      return true;
+    }
+
+    auto expect_stack(compile_result& result, const char*& ptr, const char* start) -> std::optional<program::stack> {
       static const auto stacks = []() -> std::unordered_map<std::string, program::stack> {
         return {
           {"A", program::stack::a},
@@ -64,7 +83,7 @@ namespace ud2::luogu3 {
       return std::nullopt;
     }
 
-    auto expect_state(compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::size_t {
+    auto expect_state(compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::size_t {
       std::size_t state;
       auto conv = std::from_chars(ptr, end, state);
       if (conv.ec == std::errc::invalid_argument) {
@@ -87,17 +106,17 @@ namespace ud2::luogu3 {
       return --state;
     }
 
-    auto parse_line(compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
-      static const auto states = []() -> std::unordered_map<std::string, std::function<std::optional<program::state>(compile_result & result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end)>> {
+    auto parse_line(compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+      static const auto states = []() -> std::unordered_map<std::string, std::function<std::optional<program::state>(compile_result & result, std::size_t n, const char*& ptr, const char* start, const char* end)>> {
         return {
           {"TER",
-            [](compile_result& result, std::size_t, const char*& ptr, const char* const& start, const char* const&) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t, const char*& ptr, const char* start, const char*) -> std::optional<program::state> {
               if (!expect_newline(result, ptr, start))
                 return std::nullopt;
               return std::monostate{};
             }},
           {"PUS",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -124,7 +143,7 @@ namespace ud2::luogu3 {
               return program::state_push{*target, val, next};
             }},
           {"POP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -136,7 +155,7 @@ namespace ud2::luogu3 {
               return program::state_pop{*target, next};
             }},
           {"MOV",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -151,7 +170,7 @@ namespace ud2::luogu3 {
               return program::state_move{*target, *from, next};
             }},
           {"CPY",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -166,7 +185,7 @@ namespace ud2::luogu3 {
               return program::state_copy{*target, *from, next};
             }},
           {"ADD",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -184,7 +203,7 @@ namespace ud2::luogu3 {
               return program::state_add{*target, *left, *right, next};
             }},
           {"SUB",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -202,7 +221,7 @@ namespace ud2::luogu3 {
               return program::state_subtract{*target, *left, *right, next};
             }},
           {"MUL",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -220,7 +239,7 @@ namespace ud2::luogu3 {
               return program::state_multiply{*target, *left, *right, next};
             }},
           {"DIV",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -238,7 +257,7 @@ namespace ud2::luogu3 {
               return program::state_divide{*target, *left, *right, next};
             }},
           {"MOD",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -256,7 +275,7 @@ namespace ud2::luogu3 {
               return program::state_modulo{*target, *left, *right, next};
             }},
           {"EMP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto target = expect_stack(result, ptr, start);
@@ -271,7 +290,7 @@ namespace ud2::luogu3 {
               return program::state_empty{*target, consequent, alternative};
             }},
           {"CMP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* const& start, const char* const& end) -> std::optional<program::state> {
+            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
               if (!expect_space(result, ptr, start))
                 return std::nullopt;
               auto right = expect_stack(result, ptr, start);
@@ -310,6 +329,7 @@ namespace ud2::luogu3 {
     auto start = source.c_str();
     auto end = start + source.size();
     auto ptr = start;
+    detail::skip_space(ptr);
     std::size_t n;
     {
       auto conv = std::from_chars(ptr, end, n);
@@ -337,26 +357,14 @@ namespace ud2::luogu3 {
     if (!detail::expect_newline(result, ptr, start))
       return result;
     for (auto i = static_cast<std::size_t>(0); i < n; ++i) {
+      detail::skip_separator(ptr);
       auto state = detail::parse_line(result, n, ptr, start, end);
-      if (!state) {
-        while (*ptr) {
-          if (*ptr == '\n') {
-            ++ptr;
-            break;
-          }
-          ++ptr;
-        }
-        continue;
-      }
-      result.prog.states[i] = *state;
+      if (state)
+        result.prog.states[i] = *state;
+      else
+        detail::skip_line(ptr);
     }
-    while (*ptr) {
-      if (!detail::is_separator(*ptr)) {
-        result.diags.push_back({ptr - start, ptr - start, "expected end of file"});
-        break;
-      }
-      ++ptr;
-    }
+    detail::expect_eof(result, ptr, start);
     return result;
   }
 }

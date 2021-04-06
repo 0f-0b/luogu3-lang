@@ -103,7 +103,7 @@ namespace ud2::luogu3 {
       state_empty,
       state_less>;
 
-    std::vector<state> states;
+    std::vector<state> states = std::vector<state>(1);
     std::size_t init = 0;
 
     auto emit_source(std::ostream& out) const -> void;

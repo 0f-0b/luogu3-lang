@@ -1,4 +1,5 @@
 .DS_Store
+*~
 *.o
 luogu3c
 luogu3c.exe
