@@ -1,32 +1,20 @@
 #include "program.hpp"
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
 namespace ud2::luogu3 {
   namespace detail {
-    constexpr auto source_name(program::stack s) -> const char* {
+    constexpr auto source_name(std::size_t s) -> const char* {
       switch (s) {
-        case program::stack::a:
+        case 0:
           return "A";
-        case program::stack::b:
+        case 1:
           return "B";
-        case program::stack::c:
+        case 2:
           return "C";
         default:
-          return nullptr;
-      }
-    }
-
-    constexpr auto c_name(program::stack s) -> const char* {
-      switch (s) {
-        case program::stack::a:
-          return "a";
-        case program::stack::b:
-          return "b";
-        case program::stack::c:
-          return "c";
-        default:
-          return nullptr;
+          throw std::invalid_argument{"unrepresentable stack"};
       }
     }
   }
@@ -90,22 +78,126 @@ namespace ud2::luogu3 {
   }
 
   auto program::emit_c(std::ostream& out) const -> void {
+    std::size_t max_stack = 0;
+    for (const auto& state : this->states) {
+      struct {
+        std::size_t& max_stack;
+
+        auto operator()(std::monostate) -> void { }
+
+        auto operator()(state_push s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+        }
+
+        auto operator()(state_pop s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+        }
+
+        auto operator()(state_move s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.from > this->max_stack)
+            this->max_stack = s.from;
+        }
+
+        auto operator()(state_copy s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.from > this->max_stack)
+            this->max_stack = s.from;
+        }
+
+        auto operator()(state_add s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+
+        auto operator()(state_subtract s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+
+        auto operator()(state_multiply s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+
+        auto operator()(state_divide s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+
+        auto operator()(state_modulo s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+
+        auto operator()(state_empty s) -> void {
+          if (s.target > this->max_stack)
+            this->max_stack = s.target;
+        }
+
+        auto operator()(state_less s) -> void {
+          if (s.left > this->max_stack)
+            this->max_stack = s.left;
+          if (s.right > this->max_stack)
+            this->max_stack = s.right;
+        }
+      } fn{max_stack};
+      std::visit(fn, state);
+    }
+    if (!~max_stack)
+      throw std::invalid_argument{"too many stacks"};
     out
       << "#include <inttypes.h>\n"
       << "#include <stdio.h>\n"
       << "\n"
-      << "int main() {\n";
-    for (auto s : {program::stack::a, program::stack::b, program::stack::c})
+      << "int main() {\n"
+      << "  static uint_least32_t stack[" << (max_stack + 1) << "][" << stack_capacity << "];\n"
+      << "  uint_least32_t* top[] = {\n";
+    for (auto i = static_cast<std::size_t>(0); i <= max_stack; ++i)
       out
-        << "  static uint_least32_t " << detail::c_name(s) << "[" << max_stack_size << "];\n"
-        << "  uint_least32_t* " << detail::c_name(s) << "_top = " << detail::c_name(s) << ";\n";
+        << "    stack[" << i << "],\n";
     out
-      << "  for (unsigned long i = " << max_stack_size << "; i; i--)\n"
-      << "    if (scanf(\"%\" SCNuLEAST32, " << detail::c_name(program::stack::a) << "_top) == 1)\n"
-      << "      ++" << detail::c_name(program::stack::a) << "_top;\n"
-      << "    else\n"
-      << "      break;\n"
-      << "  goto state_" << this->init << ";\n";
+      << "  };\n"
+      << "  for (uint_least32_t* ptr = *stack + " << stack_capacity << ";;) {\n"
+      << "    uint_least32_t val;\n"
+      << "    switch (scanf(\"%\" SCNuLEAST32, &val)) {\n"
+      << "      case 1:\n"
+      << "        if (ptr == *stack)\n"
+      << "          return 1;\n"
+      << "        *--ptr = val % UINT32_C(" << modulo << ");\n"
+      << "        break;\n"
+      << "      case 0:\n"
+      << "        return 4;\n"
+      << "      case EOF:\n"
+      << "        while (ptr != *stack + " << stack_capacity << ")\n"
+      << "          *(*top)++ = *ptr++;\n"
+      << "        goto state_" << this->init << ";\n"
+      << "    }\n"
+      << "  }\n";
     auto n = this->states.size();
     for (auto i = static_cast<std::size_t>(0); i < n; ++i) {
       const auto& state = this->states[i];
@@ -120,105 +212,105 @@ namespace ud2::luogu3 {
 
         auto operator()(state_push s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  *" << detail::c_name(s.target) << "_top++ = UINT32_C(" << s.val << ");\n"
+            << "  *top[" << s.target << "]++ = UINT32_C(" << s.val << ");\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_pop s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "])\n"
             << "    return 2;\n"
-            << "  --" << detail::c_name(s.target) << "_top;\n"
+            << "  --top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_move s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.from) << "_top == " << detail::c_name(s.from) << ")\n"
+            << "  if (top[" << s.from << "] == stack[" << s.from << "])\n"
             << "    return 2;\n"
-            << "  --" << detail::c_name(s.from) << "_top;\n"
-            << "  *" << detail::c_name(s.target) << "_top = *" << detail::c_name(s.from) << "_top;\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  --top[" << s.from << "];\n"
+            << "  *top[" << s.target << "] = *top[" << s.from << "];\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_copy s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.from) << "_top == " << detail::c_name(s.from) << ")\n"
+            << "  if (top[" << s.from << "] == stack[" << s.from << "])\n"
             << "    return 3;\n"
-            << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.from) << "_top[-1];\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = top[" << s.from << "][-1];\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_add s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) (((uint_least64_t) " << detail::c_name(s.left) << "_top[-1] + " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = (uint_least32_t) (((uint_least64_t) top[" << s.left << "][-1] + top[" << s.right << "][-1]) % UINT32_C(" << modulo << "));\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_subtract s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) ((UINT64_C(" << modulo << ") + " << detail::c_name(s.left) << "_top[-1] - " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = (uint_least32_t) ((UINT64_C(" << modulo << ") + top[" << s.left << "][-1] - top[" << s.right << "][-1]) % UINT32_C(" << modulo << "));\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_multiply s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  *" << detail::c_name(s.target) << "_top = (uint_least32_t) (((uint_least64_t) " << detail::c_name(s.left) << "_top[-1] * " << detail::c_name(s.right) << "_top[-1]) % UINT32_C(" << modulo << "));\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = (uint_least32_t) (((uint_least64_t) top[" << s.left << "][-1] * top[" << s.right << "][-1]) % UINT32_C(" << modulo << "));\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_divide s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
+            << "  if (top[" << s.right << "][-1] == 0)\n"
             << "    return 4;\n"
-            << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.left) << "_top[-1] / " << detail::c_name(s.right) << "_top[-1];\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = top[" << s.left << "][-1] / top[" << s.right << "][-1];\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_modulo s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << " + " << max_stack_size << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "] + " << stack_capacity << ")\n"
             << "    return 1;\n"
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  if (" << detail::c_name(s.right) << "_top[-1] == 0)\n"
+            << "  if (top[" << s.right << "][-1] == 0)\n"
             << "    return 4;\n"
-            << "  *" << detail::c_name(s.target) << "_top = " << detail::c_name(s.left) << "_top[-1] % " << detail::c_name(s.right) << "_top[-1];\n"
-            << "  ++" << detail::c_name(s.target) << "_top;\n"
+            << "  *top[" << s.target << "] = top[" << s.left << "][-1] % top[" << s.right << "][-1];\n"
+            << "  ++top[" << s.target << "];\n"
             << "  goto state_" << s.next << ";\n";
         }
 
         auto operator()(state_empty s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.target) << "_top == " << detail::c_name(s.target) << ")\n"
+            << "  if (top[" << s.target << "] == stack[" << s.target << "])\n"
             << "    goto state_" << s.consequent << ";\n"
             << "  else\n"
             << "    goto state_" << s.alternative << ";\n";
@@ -226,9 +318,9 @@ namespace ud2::luogu3 {
 
         auto operator()(state_less s) -> void {
           this->out
-            << "  if (" << detail::c_name(s.left) << "_top == " << detail::c_name(s.left) << " || " << detail::c_name(s.right) << "_top == " << detail::c_name(s.right) << ")\n"
+            << "  if (top[" << s.left << "] == stack[" << s.left << "] || top[" << s.right << "] == stack[" << s.right << "])\n"
             << "    return 3;\n"
-            << "  if (" << detail::c_name(s.left) << "_top[-1] < " << detail::c_name(s.right) << "_top[-1])\n"
+            << "  if (top[" << s.left << "][-1] < top[" << s.right << "][-1])\n"
             << "    goto state_" << s.consequent << ";\n"
             << "  else\n"
             << "    goto state_" << s.alternative << ";\n";
@@ -238,8 +330,8 @@ namespace ud2::luogu3 {
     }
     out
       << "end:\n"
-      << "  while (" << detail::c_name(program::stack::a) << "_top != " << detail::c_name(program::stack::a) << ")\n"
-      << "    printf(\"%\" PRIuLEAST32 \"\\n\", *--" << detail::c_name(program::stack::a) << "_top);\n"
+      << "  while (*top != *stack)\n"
+      << "    printf(\"%\" PRIuLEAST32 \"\\n\", *--*top);\n"
       << "  return 0;\n"
       << "}\n";
   }

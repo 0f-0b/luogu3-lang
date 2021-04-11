@@ -3,6 +3,7 @@
 *.o
 luogu3c
 luogu3c.exe
+/test/
 /.vscode/
 
 # Automake

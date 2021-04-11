@@ -61,14 +61,12 @@ namespace ud2::luogu3 {
       return true;
     }
 
-    auto expect_stack(compile_result& result, const char*& ptr, const char* start) -> std::optional<program::stack> {
-      static const auto stacks = []() -> std::unordered_map<std::string, program::stack> {
-        return {
-          {"A", program::stack::a},
-          {"B", program::stack::b},
-          {"C", program::stack::c},
-        };
-      }();
+    auto expect_stack(compile_result& result, const char*& ptr, const char* start) -> std::optional<std::size_t> {
+      static const auto stacks = std::unordered_map<std::string, std::size_t>{
+        {"A", 0},
+        {"B", 1},
+        {"C", 2},
+      };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))
         ++ptr;
@@ -107,208 +105,206 @@ namespace ud2::luogu3 {
     }
 
     auto parse_line(compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-      static const auto states = []() -> std::unordered_map<std::string, std::function<std::optional<program::state>(compile_result & result, std::size_t n, const char*& ptr, const char* start, const char* end)>> {
-        return {
-          {"TER",
-            [](compile_result& result, std::size_t, const char*& ptr, const char* start, const char*) -> std::optional<program::state> {
-              if (!expect_newline(result, ptr, start))
+      static const auto states = std::unordered_map<std::string, std::function<std::optional<program::state>(compile_result & result, std::size_t n, const char*& ptr, const char* start, const char* end)>>{
+        {"TER",
+          [](compile_result& result, std::size_t, const char*& ptr, const char* start, const char*) -> std::optional<program::state> {
+            if (!expect_newline(result, ptr, start))
+              return std::nullopt;
+            return std::monostate{};
+          }},
+        {"PUS",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            std::uint_least32_t val;
+            {
+              auto conv = std::from_chars(ptr, end, val);
+              if (conv.ec == std::errc::invalid_argument) {
+                result.diags.push_back({ptr - start, ptr - start, "invalid integer"});
                 return std::nullopt;
-              return std::monostate{};
-            }},
-          {"PUS",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              std::uint_least32_t val;
-              {
-                auto conv = std::from_chars(ptr, end, val);
-                if (conv.ec == std::errc::invalid_argument) {
-                  result.diags.push_back({ptr - start, ptr - start, "invalid integer"});
-                  return std::nullopt;
-                }
-                if (val >= modulo) {
-                  result.diags.push_back({ptr - start, conv.ptr - start, "value out of bounds"});
-                  return std::nullopt;
-                }
-                ptr = conv.ptr;
               }
-              if (!expect_space(result, ptr, start))
+              if (val >= modulo) {
+                result.diags.push_back({ptr - start, conv.ptr - start, "value out of bounds"});
                 return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_push{*target, val, next};
-            }},
-          {"POP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_pop{*target, next};
-            }},
-          {"MOV",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto from = expect_stack(result, ptr, start);
-              if (!from || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_move{*target, *from, next};
-            }},
-          {"CPY",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto from = expect_stack(result, ptr, start);
-              if (!from || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_copy{*target, *from, next};
-            }},
-          {"ADD",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_add{*target, *left, *right, next};
-            }},
-          {"SUB",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_subtract{*target, *left, *right, next};
-            }},
-          {"MUL",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_multiply{*target, *left, *right, next};
-            }},
-          {"DIV",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_divide{*target, *left, *right, next};
-            }},
-          {"MOD",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto next = expect_state(result, n, ptr, start, end);
-              if (!~next || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_modulo{*target, *left, *right, next};
-            }},
-          {"EMP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto target = expect_stack(result, ptr, start);
-              if (!target || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto consequent = expect_state(result, n, ptr, start, end);
-              if (!~consequent || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto alternative = expect_state(result, n, ptr, start, end);
-              if (!~alternative || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_empty{*target, consequent, alternative};
-            }},
-          {"CMP",
-            [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
-              if (!expect_space(result, ptr, start))
-                return std::nullopt;
-              auto right = expect_stack(result, ptr, start);
-              if (!right || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto left = expect_stack(result, ptr, start);
-              if (!left || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto alternative = expect_state(result, n, ptr, start, end);
-              if (!~alternative || !expect_space(result, ptr, start))
-                return std::nullopt;
-              auto consequent = expect_state(result, n, ptr, start, end);
-              if (!~consequent || !expect_newline(result, ptr, start))
-                return std::nullopt;
-              return program::state_less{*left, *right, consequent, alternative};
-            }},
-        };
-      }();
+              }
+              ptr = conv.ptr;
+            }
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_push{*target, val, next};
+          }},
+        {"POP",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_pop{*target, next};
+          }},
+        {"MOV",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_move{*target, *from, next};
+          }},
+        {"CPY",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_copy{*target, *from, next};
+          }},
+        {"ADD",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_add{*target, *left, *right, next};
+          }},
+        {"SUB",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_subtract{*target, *left, *right, next};
+          }},
+        {"MUL",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_multiply{*target, *left, *right, next};
+          }},
+        {"DIV",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_divide{*target, *left, *right, next};
+          }},
+        {"MOD",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_modulo{*target, *left, *right, next};
+          }},
+        {"EMP",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto consequent = expect_state(result, n, ptr, start, end);
+            if (!~consequent || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto alternative = expect_state(result, n, ptr, start, end);
+            if (!~alternative || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_empty{*target, consequent, alternative};
+          }},
+        {"CMP",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<program::state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto alternative = expect_state(result, n, ptr, start, end);
+            if (!~alternative || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto consequent = expect_state(result, n, ptr, start, end);
+            if (!~consequent || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return program::state_less{*left, *right, consequent, alternative};
+          }},
+      };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))
         ++ptr;

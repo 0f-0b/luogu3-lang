@@ -7,84 +7,78 @@
 #include <vector>
 
 namespace ud2::luogu3 {
-  constexpr auto max_states = 100000U;
-  constexpr auto max_stack_size = 1000000U;
+  constexpr auto max_states = static_cast<std::size_t>(100000);
+  constexpr auto stack_capacity = static_cast<std::size_t>(1000000);
   constexpr auto modulo = UINT32_C(998244353);
 
   struct program {
-    enum class stack {
-      a,
-      b,
-      c
-    };
-
     struct state_push {
-      stack target;
+      std::size_t target;
       std::uint_least32_t val;
       std::size_t next;
     };
 
     struct state_pop {
-      stack target;
+      std::size_t target;
       std::size_t next;
     };
 
     struct state_move {
-      stack target;
-      stack from;
+      std::size_t target;
+      std::size_t from;
       std::size_t next;
     };
 
     struct state_copy {
-      stack target;
-      stack from;
+      std::size_t target;
+      std::size_t from;
       std::size_t next;
     };
 
     struct state_add {
-      stack target;
-      stack left;
-      stack right;
+      std::size_t target;
+      std::size_t left;
+      std::size_t right;
       std::size_t next;
     };
 
     struct state_subtract {
-      stack target;
-      stack left;
-      stack right;
+      std::size_t target;
+      std::size_t left;
+      std::size_t right;
       std::size_t next;
     };
 
     struct state_multiply {
-      stack target;
-      stack left;
-      stack right;
+      std::size_t target;
+      std::size_t left;
+      std::size_t right;
       std::size_t next;
     };
 
     struct state_divide {
-      stack target;
-      stack left;
-      stack right;
+      std::size_t target;
+      std::size_t left;
+      std::size_t right;
       std::size_t next;
     };
 
     struct state_modulo {
-      stack target;
-      stack left;
-      stack right;
+      std::size_t target;
+      std::size_t left;
+      std::size_t right;
       std::size_t next;
     };
 
     struct state_empty {
-      stack target;
+      std::size_t target;
       std::size_t consequent;
       std::size_t alternative;
     };
 
     struct state_less {
-      stack left;
-      stack right;
+      std::size_t left;
+      std::size_t right;
       std::size_t consequent;
       std::size_t alternative;
     };
