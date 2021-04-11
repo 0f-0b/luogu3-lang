@@ -182,7 +182,7 @@ namespace ud2::luogu3 {
         << "    stack[" << i << "],\n";
     out
       << "  };\n"
-      << "  for (uint_least32_t* ptr = *stack + " << stack_capacity << ";;) {\n"
+      << "  for (uint_least32_t* ptr = *stack + " << stack_capacity << "; ;) {\n"
       << "    uint_least32_t val;\n"
       << "    switch (scanf(\"%\" SCNuLEAST32, &val)) {\n"
       << "      case 1:\n"
