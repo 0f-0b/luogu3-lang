@@ -304,6 +304,30 @@ namespace ud2::luogu3 {
               return std::nullopt;
             return state_less{*left, *right, consequent, alternative};
           }},
+        {"T00",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_prefix_sum{*target, next};
+          }},
+        {"T01",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_suffix_sum{*target, next};
+          }},
       };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))
