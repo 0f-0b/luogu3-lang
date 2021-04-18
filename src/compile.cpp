@@ -33,7 +33,11 @@ namespace ud2::luogu3 {
 
     auto expect_space(compile_result& result, const char*& ptr, const char* start) -> bool {
       if (*ptr && !is_separator(*ptr)) {
-        result.diags.push_back({ptr - start, ptr - start, "expected whitespace"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "expected whitespace",
+        });
         return false;
       }
       skip_space(ptr);
@@ -44,7 +48,11 @@ namespace ud2::luogu3 {
       skip_space(ptr);
       if (*ptr) {
         if (*ptr != '\n') {
-          result.diags.push_back({ptr - start, ptr - start, "expected newline"});
+          result.diags.push_back({
+            static_cast<std::size_t>(ptr - start),
+            static_cast<std::size_t>(ptr - start),
+            "expected newline",
+          });
           return false;
         }
         ++ptr;
@@ -55,7 +63,11 @@ namespace ud2::luogu3 {
     auto expect_eof(compile_result& result, const char*& ptr, const char* start) -> bool {
       skip_separator(ptr);
       if (*ptr) {
-        result.diags.push_back({ptr - start, ptr - start, "expected end of file"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "expected end of file",
+        });
         return false;
       }
       return true;
@@ -71,13 +83,21 @@ namespace ud2::luogu3 {
       while (*ptr && !is_separator(*ptr))
         ++ptr;
       if (begin == ptr) {
-        result.diags.push_back({ptr - start, ptr - start, "expected stack name"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "expected stack name",
+        });
         return std::nullopt;
       }
       auto s = std::string{begin, ptr};
       if (auto fn = stacks.find(s); fn != stacks.end())
         return fn->second;
-      result.diags.push_back({begin - start, ptr - start, "unknown stack name"});
+      result.diags.push_back({
+        static_cast<std::size_t>(begin - start),
+        static_cast<std::size_t>(ptr - start),
+        "unknown stack name",
+      });
       return std::nullopt;
     }
 
@@ -85,19 +105,35 @@ namespace ud2::luogu3 {
       std::size_t state;
       auto conv = std::from_chars(ptr, end, state);
       if (conv.ec == std::errc::invalid_argument) {
-        result.diags.push_back({ptr - start, ptr - start, "invalid integer"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "invalid integer",
+        });
         return -1;
       }
       if (conv.ec == std::errc::result_out_of_range) {
-        result.diags.push_back({ptr - start, conv.ptr - start, "invalid state"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(conv.ptr - start),
+          "invalid state",
+        });
         return -1;
       }
       if (state > n) {
-        result.diags.push_back({ptr - start, conv.ptr - start, "state out of bounds"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(conv.ptr - start),
+          "state out of bounds",
+        });
         return -1;
       }
       if (state == 0) {
-        result.diags.push_back({ptr - start, conv.ptr - start, "invalid state; did you mean state 1?"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(conv.ptr - start),
+          "invalid state; did you mean state 1?",
+        });
         return -1;
       }
       ptr = conv.ptr;
@@ -123,11 +159,19 @@ namespace ud2::luogu3 {
             {
               auto conv = std::from_chars(ptr, end, val);
               if (conv.ec == std::errc::invalid_argument) {
-                result.diags.push_back({ptr - start, ptr - start, "invalid integer"});
+                result.diags.push_back({
+                  static_cast<std::size_t>(ptr - start),
+                  static_cast<std::size_t>(ptr - start),
+                  "invalid integer",
+                });
                 return std::nullopt;
               }
               if (val >= modulo) {
-                result.diags.push_back({ptr - start, conv.ptr - start, "value out of bounds"});
+                result.diags.push_back({
+                  static_cast<std::size_t>(ptr - start),
+                  static_cast<std::size_t>(conv.ptr - start),
+                  "value out of bounds",
+                });
                 return std::nullopt;
               }
               ptr = conv.ptr;
@@ -164,7 +208,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_move{*target, *from, next};
+            return state_move{{*target, *from, next}};
           }},
         {"CPY",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -179,7 +223,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_copy{*target, *from, next};
+            return state_copy{{*target, *from, next}};
           }},
         {"ADD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -197,7 +241,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_add{*target, *left, *right, next};
+            return state_add{{*target, *left, *right, next}};
           }},
         {"SUB",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -215,7 +259,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_subtract{*target, *left, *right, next};
+            return state_subtract{{*target, *left, *right, next}};
           }},
         {"MUL",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -233,7 +277,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_multiply{*target, *left, *right, next};
+            return state_multiply{{*target, *left, *right, next}};
           }},
         {"DIV",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -251,7 +295,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_divide{*target, *left, *right, next};
+            return state_divide{{*target, *left, *right, next}};
           }},
         {"MOD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -269,7 +313,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_modulo{*target, *left, *right, next};
+            return state_modulo{{*target, *left, *right, next}};
           }},
         {"EMP",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -314,7 +358,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_prefix_sum{*target, next};
+            return state_prefix_sum{{*target, next}};
           }},
         {"T01",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -326,20 +370,28 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_suffix_sum{*target, next};
+            return state_suffix_sum{{*target, next}};
           }},
       };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))
         ++ptr;
       if (begin == ptr) {
-        result.diags.push_back({ptr - start, ptr - start, "expected state type"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "expected state type",
+        });
         return std::nullopt;
       }
       auto s = std::string{begin, ptr};
       if (auto fn = states.find(s); fn != states.end())
         return fn->second(result, n, ptr, start, end);
-      result.diags.push_back({begin - start, ptr - start, "unknown state type"});
+      result.diags.push_back({
+        static_cast<std::size_t>(begin - start),
+        static_cast<std::size_t>(ptr - start),
+        "unknown state type",
+      });
       return std::nullopt;
     }
   }
@@ -354,15 +406,27 @@ namespace ud2::luogu3 {
     {
       auto conv = std::from_chars(ptr, end, n);
       if (conv.ec == std::errc::invalid_argument) {
-        result.diags.push_back({ptr - start, ptr - start, "invalid integer"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(ptr - start),
+          "invalid integer",
+        });
         return result;
       }
       if (conv.ec == std::errc::result_out_of_range || n > max_states) {
-        result.diags.push_back({ptr - start, conv.ptr - start, "too many states"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(conv.ptr - start),
+          "too many states",
+        });
         return result;
       }
       if (n == 0) {
-        result.diags.push_back({ptr - start, conv.ptr - start, "too few states"});
+        result.diags.push_back({
+          static_cast<std::size_t>(ptr - start),
+          static_cast<std::size_t>(conv.ptr - start),
+          "too few states",
+        });
         return result;
       }
       ptr = conv.ptr;
