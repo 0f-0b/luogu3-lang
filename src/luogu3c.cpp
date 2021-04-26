@@ -5,8 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <luogu3/compile.hpp>
 #include <string>
-#include "compile.hpp"
 
 template <typename CharT, typename Traits>
 auto read_fully(std::basic_istream<CharT, Traits>& in) -> std::basic_string<CharT> {

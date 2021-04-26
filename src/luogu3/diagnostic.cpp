@@ -1,7 +1,7 @@
-#include "diagnostic.hpp"
 #include <algorithm>
 #include <cstring>
 #include <iterator>
+#include <luogu3/diagnostic.hpp>
 
 namespace ud2::luogu3 {
   auto print_diagnostics(std::ostream& out, const std::vector<diagnostic>& diags, const char* filename, const char* source) -> bool {

@@ -1,10 +1,10 @@
 #ifndef LUOGU3_COMPILE_HPP
 #define LUOGU3_COMPILE_HPP
 
+#include <luogu3/diagnostic.hpp>
+#include <luogu3/program.hpp>
 #include <string>
 #include <vector>
-#include "diagnostic.hpp"
-#include "program.hpp"
 
 namespace ud2::luogu3 {
   struct compile_result {

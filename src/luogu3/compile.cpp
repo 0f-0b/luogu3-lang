@@ -1,8 +1,8 @@
-#include "compile.hpp"
 #include <charconv>
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <luogu3/compile.hpp>
 #include <optional>
 #include <system_error>
 #include <unordered_map>
