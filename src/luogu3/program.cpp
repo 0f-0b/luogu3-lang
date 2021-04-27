@@ -244,9 +244,9 @@ namespace ud2::luogu3 {
 
   auto state_prefix_sum::emit_c(std::ostream& out) const -> void {
     out
+      << "  if (top[" << this->target << "] == stack[" << this->target << "])\n"
+      << "    return 3;\n"
       << "  {\n"
-      << "    if (top[" << this->target << "] == stack[" << this->target << "])\n"
-      << "      return 3;\n"
       << "    uint_least32_t k = top[" << this->target << "][-1];\n"
       << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
       << "      return 3;\n"
@@ -267,15 +267,38 @@ namespace ud2::luogu3 {
 
   auto state_suffix_sum::emit_c(std::ostream& out) const -> void {
     out
+      << "  if (top[" << this->target << "] == stack[" << this->target << "])\n"
+      << "    return 3;\n"
       << "  {\n"
-      << "    if (top[" << this->target << "] == stack[" << this->target << "])\n"
-      << "      return 3;\n"
       << "    uint_least32_t k = top[" << this->target << "][-1];\n"
       << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
       << "      return 3;\n"
       << "    uint_least32_t* ptr = top[" << this->target << "] - 1 - k;\n"
       << "    for (uint_least32_t i = 1; i < k; ++i)\n"
       << "      ptr[i] += ptr[i - 1];\n"
+      << "  }\n"
+      << "  goto state_" << this->next << ";\n";
+  }
+
+  auto state_finite_difference::max_stack() const -> std::size_t {
+    return this->target;
+  }
+
+  auto state_finite_difference::emit_source(std::ostream& out) const -> void {
+    out << "T02 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_finite_difference::emit_c(std::ostream& out) const -> void {
+    out
+      << "  if (top[" << this->target << "] == stack[" << this->target << "])\n"
+      << "    return 3;\n"
+      << "  {\n"
+      << "    uint_least32_t k = top[" << this->target << "][-1];\n"
+      << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
+      << "      return 3;\n"
+      << "    uint_least32_t* ptr = top[" << this->target << "] - 1 - k;\n"
+      << "    for (uint_least32_t i = 1; i < k; ++i)\n"
+      << "      ptr[i - 1] -= ptr[i];\n"
       << "  }\n"
       << "  goto state_" << this->next << ";\n";
   }

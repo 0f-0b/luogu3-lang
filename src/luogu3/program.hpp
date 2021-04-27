@@ -139,6 +139,14 @@ namespace ud2::luogu3 {
     auto emit_c(std::ostream& out) const -> void;
   };
 
+  struct state_finite_difference {
+    std::size_t target;
+    std::size_t next;
+    auto max_stack() const -> std::size_t;
+    auto emit_source(std::ostream& out) const -> void;
+    auto emit_c(std::ostream& out) const -> void;
+  };
+
   using state = std::variant<
     state_terminate,
     state_push,
@@ -153,7 +161,8 @@ namespace ud2::luogu3 {
     state_empty,
     state_less,
     state_prefix_sum,
-    state_suffix_sum>;
+    state_suffix_sum,
+    state_finite_difference>;
 
   struct program {
     std::vector<state> states = std::vector<state>(1);
