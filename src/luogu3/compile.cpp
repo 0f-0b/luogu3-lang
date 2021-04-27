@@ -208,7 +208,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_move{{*target, *from, next}};
+            return state_move{*target, *from, next};
           }},
         {"CPY",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -223,7 +223,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_copy{{*target, *from, next}};
+            return state_copy{*target, *from, next};
           }},
         {"ADD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -241,7 +241,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_add{{*target, *left, *right, next}};
+            return state_add{*target, *left, *right, next};
           }},
         {"SUB",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -259,7 +259,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_subtract{{*target, *left, *right, next}};
+            return state_subtract{*target, *left, *right, next};
           }},
         {"MUL",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -277,7 +277,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_multiply{{*target, *left, *right, next}};
+            return state_multiply{*target, *left, *right, next};
           }},
         {"DIV",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -295,7 +295,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_divide{{*target, *left, *right, next}};
+            return state_divide{*target, *left, *right, next};
           }},
         {"MOD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -313,7 +313,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_modulo{{*target, *left, *right, next}};
+            return state_modulo{*target, *left, *right, next};
           }},
         {"EMP",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -358,7 +358,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_prefix_sum{{*target, next}};
+            return state_prefix_sum{*target, next};
           }},
         {"T01",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
@@ -370,7 +370,7 @@ namespace ud2::luogu3 {
             auto next = expect_state(result, n, ptr, start, end);
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
-            return state_suffix_sum{{*target, next}};
+            return state_suffix_sum{*target, next};
           }},
       };
       auto begin = ptr;

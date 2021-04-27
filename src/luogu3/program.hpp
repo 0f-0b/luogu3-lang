@@ -27,88 +27,10 @@ namespace ud2::luogu3 {
           throw std::invalid_argument{"unrepresentable stack"};
       }
     }
-
-    template <char... SourceName>
-    struct state_unary_op {
-      std::size_t target;
-      std::size_t from;
-      std::size_t next;
-
-      auto max_stack() const -> std::size_t {
-        return std::max(this->target, this->from);
-      }
-
-      auto emit_source(std::ostream& out) const -> void {
-        (out << ... << SourceName) << ' ' << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
-      }
-    };
-
-    template <char... SourceName>
-    struct state_binary_op {
-      std::size_t target;
-      std::size_t left;
-      std::size_t right;
-      std::size_t next;
-
-      auto max_stack() const -> std::size_t {
-        return std::max({this->target, this->left, this->right});
-      }
-
-      auto emit_source(std::ostream& out) const -> void {
-        (out << ... << SourceName) << ' ' << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
-      }
-
-    protected:
-      auto emit_c_header(std::ostream& out) const -> void {
-        out
-          << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
-          << "    return 1;\n"
-          << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
-          << "    return 3;\n";
-      }
-
-      auto emit_c_footer(std::ostream& out) const -> void {
-        out
-          << "  ++top[" << this->target << "];\n"
-          << "  goto state_" << this->next << ";\n";
-      }
-    };
-
-    template <char... SourceName>
-    struct state_sequential_op {
-      std::size_t target;
-      std::size_t next;
-
-      auto max_stack() const -> std::size_t {
-        return this->target;
-      }
-
-      auto emit_source(std::ostream& out) const -> void {
-        (out << ... << SourceName) << ' ' << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
-      }
-
-    protected:
-      auto emit_c_header(std::ostream& out) const -> void {
-        out
-          << "  {\n"
-          << "    if (top[" << this->target << "] == stack[" << this->target << "])\n"
-          << "      return 3;\n"
-          << "    uint_least32_t k = top[" << this->target << "][-1];\n"
-          << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
-          << "      return 3;\n"
-          << "    uint_least32_t* ptr = top[" << this->target << "] - 1 - k;\n";
-      }
-
-      auto emit_c_footer(std::ostream& out) const -> void {
-        out
-          << "  }\n"
-          << "  goto state_" << this->next << ";\n";
-      }
-    };
   }
 
   struct state_terminate {
-    auto max_stack() const -> std::size_t {
+    constexpr auto max_stack() const -> std::size_t {
       return 0;
     }
 
@@ -126,7 +48,7 @@ namespace ud2::luogu3 {
     std::uint_least32_t val;
     std::size_t next;
 
-    auto max_stack() const -> std::size_t {
+    constexpr auto max_stack() const -> std::size_t {
       return this->target;
     }
 
@@ -147,7 +69,7 @@ namespace ud2::luogu3 {
     std::size_t target;
     std::size_t next;
 
-    auto max_stack() const -> std::size_t {
+    constexpr auto max_stack() const -> std::size_t {
       return this->target;
     }
 
@@ -164,7 +86,19 @@ namespace ud2::luogu3 {
     }
   };
 
-  struct state_move : detail::state_unary_op<'M', 'O', 'V'> {
+  struct state_move {
+    std::size_t target;
+    std::size_t from;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max(this->target, this->from);
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "MOV" << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+    }
+
     auto emit_c(std::ostream& out) -> void {
       out
         << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
@@ -178,7 +112,19 @@ namespace ud2::luogu3 {
     }
   };
 
-  struct state_copy : detail::state_unary_op<'C', 'P', 'Y'> {
+  struct state_copy {
+    std::size_t target;
+    std::size_t from;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max(this->target, this->from);
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "CPY " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+    }
+
     auto emit_c(std::ostream& out) -> void {
       out
         << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
@@ -191,49 +137,137 @@ namespace ud2::luogu3 {
     }
   };
 
-  struct state_add : detail::state_binary_op<'A', 'D', 'D'> {
-    auto emit_c(std::ostream& out) -> void {
-      this->emit_c_header(out);
-      out << "  *top[" << this->target << "] = (uint_least32_t) (((uint_least64_t) top[" << this->left << "][-1] + top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n";
-      this->emit_c_footer(out);
-    }
-  };
+  struct state_add {
+    std::size_t target;
+    std::size_t left;
+    std::size_t right;
+    std::size_t next;
 
-  struct state_subtract : detail::state_binary_op<'S', 'U', 'B'> {
-    auto emit_c(std::ostream& out) -> void {
-      this->emit_c_header(out);
-      out << "  *top[" << this->target << "] = (uint_least32_t) ((UINT64_C(" << modulo << ") + top[" << this->left << "][-1] - top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n";
-      this->emit_c_footer(out);
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max({this->target, this->left, this->right});
     }
-  };
 
-  struct state_multiply : detail::state_binary_op<'M', 'U', 'L'> {
-    auto emit_c(std::ostream& out) -> void {
-      this->emit_c_header(out);
-      out << "  *top[" << this->target << "] = (uint_least32_t) (((uint_least64_t) top[" << this->left << "][-1] * top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n";
-      this->emit_c_footer(out);
+    auto emit_source(std::ostream& out) const -> void {
+      out << "ADD " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
     }
-  };
 
-  struct state_divide : detail::state_binary_op<'D', 'I', 'V'> {
     auto emit_c(std::ostream& out) -> void {
-      this->emit_c_header(out);
       out
+        << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
+        << "    return 1;\n"
+        << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
+        << "    return 3;\n"
+        << "  *top[" << this->target << "] = (uint_least32_t) (((uint_least64_t) top[" << this->left << "][-1] + top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n"
+        << "  ++top[" << this->target << "];\n"
+        << "  goto state_" << this->next << ";\n";
+    }
+  };
+
+  struct state_subtract {
+    std::size_t target;
+    std::size_t left;
+    std::size_t right;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max({this->target, this->left, this->right});
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "SUB " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+    }
+
+    auto emit_c(std::ostream& out) -> void {
+      out
+        << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
+        << "    return 1;\n"
+        << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
+        << "    return 3;\n"
+        << "  *top[" << this->target << "] = (uint_least32_t) ((UINT64_C(" << modulo << ") + top[" << this->left << "][-1] - top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n"
+        << "  ++top[" << this->target << "];\n"
+        << "  goto state_" << this->next << ";\n";
+    }
+  };
+
+  struct state_multiply {
+    std::size_t target;
+    std::size_t left;
+    std::size_t right;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max({this->target, this->left, this->right});
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "MUL " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+    }
+
+    auto emit_c(std::ostream& out) -> void {
+      out
+        << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
+        << "    return 1;\n"
+        << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
+        << "    return 3;\n"
+        << "  *top[" << this->target << "] = (uint_least32_t) (((uint_least64_t) top[" << this->left << "][-1] * top[" << this->right << "][-1]) % UINT32_C(" << modulo << "));\n"
+        << "  ++top[" << this->target << "];\n"
+        << "  goto state_" << this->next << ";\n";
+    }
+  };
+
+  struct state_divide {
+    std::size_t target;
+    std::size_t left;
+    std::size_t right;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max({this->target, this->left, this->right});
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "DIV " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+    }
+
+    auto emit_c(std::ostream& out) -> void {
+      out
+        << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
+        << "    return 1;\n"
+        << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
+        << "    return 3;\n"
         << "  if (top[" << this->right << "][-1] == 0)\n"
         << "    return 4;\n"
-        << "  *top[" << this->target << "] = top[" << this->left << "][-1] / top[" << this->right << "][-1];\n";
-      this->emit_c_footer(out);
+        << "  *top[" << this->target << "] = top[" << this->left << "][-1] / top[" << this->right << "][-1];\n"
+        << "  ++top[" << this->target << "];\n"
+        << "  goto state_" << this->next << ";\n";
     }
   };
 
-  struct state_modulo : detail::state_binary_op<'M', 'O', 'D'> {
+  struct state_modulo {
+    std::size_t target;
+    std::size_t left;
+    std::size_t right;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return std::max({this->target, this->left, this->right});
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "MOD " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+    }
+
     auto emit_c(std::ostream& out) -> void {
-      this->emit_c_header(out);
       out
+        << "  if (top[" << this->target << "] == stack[" << this->target << "] + " << stack_capacity << ")\n"
+        << "    return 1;\n"
+        << "  if (top[" << this->left << "] == stack[" << this->left << "] || top[" << this->right << "] == stack[" << this->right << "])\n"
+        << "    return 3;\n"
         << "  if (top[" << this->right << "][-1] == 0)\n"
         << "    return 4;\n"
-        << "  *top[" << this->target << "] = top[" << this->left << "][-1] % top[" << this->right << "][-1];\n";
-      this->emit_c_footer(out);
+        << "  *top[" << this->target << "] = top[" << this->left << "][-1] % top[" << this->right << "][-1];\n"
+        << "  ++top[" << this->target << "];\n"
+        << "  goto state_" << this->next << ";\n";
     }
   };
 
@@ -242,7 +276,7 @@ namespace ud2::luogu3 {
     std::size_t consequent;
     std::size_t alternative;
 
-    auto max_stack() const -> std::size_t {
+    constexpr auto max_stack() const -> std::size_t {
       return this->target;
     }
 
@@ -265,7 +299,7 @@ namespace ud2::luogu3 {
     std::size_t consequent;
     std::size_t alternative;
 
-    auto max_stack() const -> std::size_t {
+    constexpr auto max_stack() const -> std::size_t {
       return std::max(this->left, this->right);
     }
 
@@ -284,23 +318,59 @@ namespace ud2::luogu3 {
     }
   };
 
-  struct state_prefix_sum : detail::state_sequential_op<'T', '0', '0'> {
+  struct state_prefix_sum {
+    std::size_t target;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return this->target;
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "T00 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+    }
+
     auto emit_c(std::ostream& out) const -> void {
-      this->emit_c_header(out);
       out
+        << "  {\n"
+        << "    if (top[" << this->target << "] == stack[" << this->target << "])\n"
+        << "      return 3;\n"
+        << "    uint_least32_t k = top[" << this->target << "][-1];\n"
+        << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
+        << "      return 3;\n"
+        << "    uint_least32_t* ptr = top[" << this->target << "] - 1 - k;\n"
         << "    for (uint_least32_t i = 1; i < k; ++i)\n"
-        << "      ptr[k - i - 1] += ptr[k - i];\n";
-      this->emit_c_footer(out);
+        << "      ptr[k - i - 1] += ptr[k - i];\n"
+        << "  }\n"
+        << "  goto state_" << this->next << ";\n";
     }
   };
 
-  struct state_suffix_sum : detail::state_sequential_op<'T', '0', '1'> {
+  struct state_suffix_sum {
+    std::size_t target;
+    std::size_t next;
+
+    constexpr auto max_stack() const -> std::size_t {
+      return this->target;
+    }
+
+    auto emit_source(std::ostream& out) const -> void {
+      out << "T01 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+    }
+
     auto emit_c(std::ostream& out) const -> void {
-      this->emit_c_header(out);
       out
+        << "  {\n"
+        << "    if (top[" << this->target << "] == stack[" << this->target << "])\n"
+        << "      return 3;\n"
+        << "    uint_least32_t k = top[" << this->target << "][-1];\n"
+        << "    if (top[" << this->target << "] - 1 - stack[" << this->target << "] < k)\n"
+        << "      return 3;\n"
+        << "    uint_least32_t* ptr = top[" << this->target << "] - 1 - k;\n"
         << "    for (uint_least32_t i = 1; i < k; ++i)\n"
-        << "      ptr[i] += ptr[i - 1];\n";
-      this->emit_c_footer(out);
+        << "      ptr[i] += ptr[i - 1];\n"
+        << "  }\n"
+        << "  goto state_" << this->next << ";\n";
     }
   };
 
