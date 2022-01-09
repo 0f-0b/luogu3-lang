@@ -384,6 +384,277 @@ namespace ud2::luogu3 {
               return std::nullopt;
             return state_finite_difference{*target, next};
           }},
+        {"T03",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_reverse{*target, next};
+          }},
+        {"T04",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_sort_ascending{*target, next};
+          }},
+        {"T05",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_sort_descending{*target, next};
+          }},
+        {"T06",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto count = expect_stack(result, ptr, start);
+            if (!count || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_rotate{*target, *count, next};
+          }},
+        {"T07",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_move{*target, *from, next};
+          }},
+        {"T08",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_copy{*target, *from, next};
+          }},
+        {"T09",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_fill{*target, *from, next};
+          }},
+        {"T10",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_iota{*target, *from, next};
+          }},
+        {"T11",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_sum{*target, *from, next};
+          }},
+        {"T12",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_product{*target, *from, next};
+          }},
+        // T13 does not exist
+        {"T14",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_add{*target, *from, next};
+          }},
+        {"T15",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_subtract{*target, *from, next};
+          }},
+        {"T16",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_multiply{*target, *from, next};
+          }},
+        {"T17",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_divide{*target, *from, next};
+          }},
+        {"T18",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto from = expect_stack(result, ptr, start);
+            if (!from || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_bulk_modulo{*target, *from, next};
+          }},
+        {"T19",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_vector_add{*target, *left, *right, next};
+          }},
+        {"T20",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_vector_subtract{*target, *left, *right, next};
+          }},
+        {"T21",
+          [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
+            if (!expect_space(result, ptr, start))
+              return std::nullopt;
+            auto target = expect_stack(result, ptr, start);
+            if (!target || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto left = expect_stack(result, ptr, start);
+            if (!left || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto right = expect_stack(result, ptr, start);
+            if (!right || !expect_space(result, ptr, start))
+              return std::nullopt;
+            auto next = expect_state(result, n, ptr, start, end);
+            if (!~next || !expect_newline(result, ptr, start))
+              return std::nullopt;
+            return state_vector_multiply{*target, *left, *right, next};
+          }},
       };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))

@@ -1,3 +1,3 @@
 # luogu3-lang
 
-Deterministic Luogu Automaton with Three Stacks.
+An implementation of the Luogu 3.0+++ language.

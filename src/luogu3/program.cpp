@@ -303,6 +303,258 @@ namespace ud2::luogu3 {
       << "  goto state_" << this->next << ";\n";
   }
 
+  auto state_reverse::max_stack() const -> std::size_t {
+    return this->target;
+  }
+
+  auto state_reverse::emit_source(std::ostream& out) const -> void {
+    out << "T03 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_reverse::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_sort_ascending::max_stack() const -> std::size_t {
+    return this->target;
+  }
+
+  auto state_sort_ascending::emit_source(std::ostream& out) const -> void {
+    out << "T04 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_sort_ascending::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_sort_descending::max_stack() const -> std::size_t {
+    return this->target;
+  }
+
+  auto state_sort_descending::emit_source(std::ostream& out) const -> void {
+    out << "T05 " << detail::source_name(this->target) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_sort_descending::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_rotate::max_stack() const -> std::size_t {
+    return std::max(this->target, this->count);
+  }
+
+  auto state_rotate::emit_source(std::ostream& out) const -> void {
+    out << "T06 " << detail::source_name(this->target) << ' ' << detail::source_name(this->count) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_rotate::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_move::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_move::emit_source(std::ostream& out) const -> void {
+    out << "T07 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_move::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_copy::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_copy::emit_source(std::ostream& out) const -> void {
+    out << "T08 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_copy::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_fill::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_fill::emit_source(std::ostream& out) const -> void {
+    out << "T09 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_fill::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_iota::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_iota::emit_source(std::ostream& out) const -> void {
+    out << "T10 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_iota::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_sum::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_sum::emit_source(std::ostream& out) const -> void {
+    out << "T11 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_sum::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_product::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_product::emit_source(std::ostream& out) const -> void {
+    out << "T12 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_product::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_add::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_add::emit_source(std::ostream& out) const -> void {
+    out << "T14 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_add::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_subtract::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_subtract::emit_source(std::ostream& out) const -> void {
+    out << "T15 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_subtract::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_multiply::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_multiply::emit_source(std::ostream& out) const -> void {
+    out << "T16 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_multiply::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_divide::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_divide::emit_source(std::ostream& out) const -> void {
+    out << "T17 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_divide::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_bulk_modulo::max_stack() const -> std::size_t {
+    return std::max(this->target, this->from);
+  }
+
+  auto state_bulk_modulo::emit_source(std::ostream& out) const -> void {
+    out << "T18 " << detail::source_name(this->target) << ' ' << detail::source_name(this->from) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_bulk_modulo::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_vector_add::max_stack() const -> std::size_t {
+    return std::max({this->target, this->left, this->right});
+  }
+
+  auto state_vector_add::emit_source(std::ostream& out) const -> void {
+    out << "T19 " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_vector_add::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_vector_subtract::max_stack() const -> std::size_t {
+    return std::max({this->target, this->left, this->right});
+  }
+
+  auto state_vector_subtract::emit_source(std::ostream& out) const -> void {
+    out << "T20 " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_vector_subtract::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
+  auto state_vector_multiply::max_stack() const -> std::size_t {
+    return std::max({this->target, this->left, this->right});
+  }
+
+  auto state_vector_multiply::emit_source(std::ostream& out) const -> void {
+    out << "T21 " << detail::source_name(this->target) << ' ' << detail::source_name(this->left) << ' ' << detail::source_name(this->right) << ' ' << (this->next + 1) << '\n';
+  }
+
+  auto state_vector_multiply::emit_c(std::ostream& out) const -> void {
+    out
+      << "  fputs(\"unimplemented\\n\", stderr);\n"
+      << "  abort();\n";
+  }
+
   auto program::emit_source(std::ostream& out) const -> void {
     out << this->states.size() << ' ' << (this->init + 1) << '\n';
     for (const auto& state : this->states)
@@ -318,8 +570,9 @@ namespace ud2::luogu3 {
     out
       << "#include <inttypes.h>\n"
       << "#include <stdio.h>\n"
+      << "#include <stdlib.h>\n"
       << "\n"
-      << "int main() {\n"
+      << "int main(void) {\n"
       << "  static uint_least32_t stack[" << (max_stack + 1) << "][" << stack_capacity << "];\n"
       << "  uint_least32_t* top[] = {\n";
     for (auto i = static_cast<std::size_t>(0); i <= max_stack; ++i)
