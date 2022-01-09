@@ -8,11 +8,6 @@
 #include <luogu3/compile.hpp>
 #include <string>
 
-template <typename CharT, typename Traits>
-auto read_fully(std::basic_istream<CharT, Traits>& in) -> std::basic_string<CharT> {
-  return {std::istreambuf_iterator<CharT>{in}, std::istreambuf_iterator<CharT>{}};
-}
-
 struct help_impl {
   const char* name;
   const argagg::parser& arg_parser;
