@@ -5,4 +5,4 @@ nobase_include_HEADERS = luogu3/compile.hpp luogu3/diagnostic.hpp luogu3/program
 libluogu3_la_SOURCES = luogu3/compile.cpp luogu3/diagnostic.cpp luogu3/program.cpp
 luogu3c_SOURCES = argagg/argagg.hpp luogu3c.cpp
 luogu3c_LDADD = libluogu3.la
-AM_CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
+AM_CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic

@@ -3,8 +3,9 @@
 
 #include <cstddef>
 #include <ostream>
+#include <span>
 #include <string>
-#include <vector>
+#include <string_view>
 
 namespace ud2::luogu3 {
   struct diagnostic {
@@ -13,7 +14,7 @@ namespace ud2::luogu3 {
     std::string message;
   };
 
-  auto print_diagnostics(std::ostream& out, const std::vector<diagnostic>& diags, const char* filename, const char* source) -> bool;
+  auto print_diagnostics(std::ostream& out, const std::span<diagnostic> diags, const std::string_view filename, const std::string_view source) -> bool;
 }
 
 #endif

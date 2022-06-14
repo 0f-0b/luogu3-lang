@@ -1,4 +1,4 @@
-AC_INIT([Luogu3], [0.1.0], [https://github.com/sjx233/luogu3-lang/issues], [luogu3-lang], [https://github.com/sjx233/luogu3-lang])
+AC_INIT([Luogu3], [0.1.0], [https://github.com/0f-0b/luogu3-lang/issues], [luogu3-lang], [https://github.com/0f-0b/luogu3-lang])
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_PROG_CXX
 AM_PROG_AR

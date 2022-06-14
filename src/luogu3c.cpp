@@ -1,6 +1,6 @@
-#include <config.h>
 #include <argagg/argagg.hpp>
 #include <cerrno>
+#include <config.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -62,31 +62,31 @@ auto main(int argc, char* argv[]) -> int {
   std::string source;
   {
     auto is_std = filename == "-";
-    auto& in = is_std ? std::cin : *new std::ifstream{filename};
+    auto in = is_std ? &std::cin : new std::ifstream{filename};
     if (is_std)
       filename = "<stdin>";
-    source.assign(std::istreambuf_iterator<char>{in}, std::istreambuf_iterator<char>{});
+    source.assign<std::istreambuf_iterator<char>>({*in}, {});
     if (!is_std)
-      delete &in;
+      delete in;
   }
   if (errno) {
     std::cerr << filename << ": " << std::strerror(errno) << '\n';
     return 1;
   }
   auto result = ud2::luogu3::compile(source);
-  auto error = ud2::luogu3::print_diagnostics(std::cerr, result.diags, filename.c_str(), source.c_str());
+  auto error = ud2::luogu3::print_diagnostics(std::cerr, result.diags, filename, source);
   errno = 0;
   {
     auto is_std = output == "-";
-    auto& out = is_std ? std::cout : *new std::ofstream{output};
+    auto out = is_std ? &std::cout : new std::ofstream{output};
     if (is_std)
       output = "<stdout>";
     if (format)
-      result.prog.emit_source(out);
+      result.prog.emit_source(*out);
     else
-      result.prog.emit_c(out);
+      result.prog.emit_c(*out);
     if (!is_std)
-      delete &out;
+      delete out;
   }
   if (errno) {
     std::cerr << output << ": " << std::strerror(errno) << '\n';

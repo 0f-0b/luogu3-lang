@@ -28,7 +28,7 @@ namespace ud2::luogu3 {
     }
 
     auto skip_line(const char*& ptr) -> void {
-      while (*ptr && *ptr++ != '\n') { }
+      while (*ptr && *ptr++ != '\n') {}
     }
 
     auto expect_space(compile_result& result, const char*& ptr, const char* start) -> bool {
@@ -142,13 +142,16 @@ namespace ud2::luogu3 {
 
     auto parse_line(compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
       static const auto states = std::unordered_map<std::string, std::function<std::optional<state>(compile_result & result, std::size_t n, const char*& ptr, const char* start, const char* end)>>{
-        {"TER",
+        {
+          "TER",
           [](compile_result& result, std::size_t, const char*& ptr, const char* start, const char*) -> std::optional<state> {
             if (!expect_newline(result, ptr, start))
               return std::nullopt;
             return state_terminate{};
-          }},
-        {"PUS",
+          },
+        },
+        {
+          "PUS",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -182,8 +185,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_push{*target, val, next};
-          }},
-        {"POP",
+          },
+        },
+        {
+          "POP",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -194,8 +199,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_pop{*target, next};
-          }},
-        {"MOV",
+          },
+        },
+        {
+          "MOV",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -209,8 +216,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_move{*target, *from, next};
-          }},
-        {"CPY",
+          },
+        },
+        {
+          "CPY",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -224,8 +233,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_copy{*target, *from, next};
-          }},
-        {"ADD",
+          },
+        },
+        {
+          "ADD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -242,8 +253,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_add{*target, *left, *right, next};
-          }},
-        {"SUB",
+          },
+        },
+        {
+          "SUB",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -260,8 +273,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_subtract{*target, *left, *right, next};
-          }},
-        {"MUL",
+          },
+        },
+        {
+          "MUL",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -278,8 +293,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_multiply{*target, *left, *right, next};
-          }},
-        {"DIV",
+          },
+        },
+        {
+          "DIV",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -296,8 +313,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_divide{*target, *left, *right, next};
-          }},
-        {"MOD",
+          },
+        },
+        {
+          "MOD",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -314,8 +333,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_modulo{*target, *left, *right, next};
-          }},
-        {"EMP",
+          },
+        },
+        {
+          "EMP",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -329,8 +350,10 @@ namespace ud2::luogu3 {
             if (!~alternative || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_empty{*target, consequent, alternative};
-          }},
-        {"CMP",
+          },
+        },
+        {
+          "CMP",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -347,8 +370,10 @@ namespace ud2::luogu3 {
             if (!~consequent || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_less{*left, *right, consequent, alternative};
-          }},
-        {"T00",
+          },
+        },
+        {
+          "T00",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -359,8 +384,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_prefix_sum{*target, next};
-          }},
-        {"T01",
+          },
+        },
+        {
+          "T01",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -371,8 +398,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_suffix_sum{*target, next};
-          }},
-        {"T02",
+          },
+        },
+        {
+          "T02",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -383,8 +412,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_finite_difference{*target, next};
-          }},
-        {"T03",
+          },
+        },
+        {
+          "T03",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -395,8 +426,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_reverse{*target, next};
-          }},
-        {"T04",
+          },
+        },
+        {
+          "T04",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -407,8 +440,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_sort_ascending{*target, next};
-          }},
-        {"T05",
+          },
+        },
+        {
+          "T05",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -419,8 +454,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_sort_descending{*target, next};
-          }},
-        {"T06",
+          },
+        },
+        {
+          "T06",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -434,8 +471,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_rotate{*target, *count, next};
-          }},
-        {"T07",
+          },
+        },
+        {
+          "T07",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -449,8 +488,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_move{*target, *from, next};
-          }},
-        {"T08",
+          },
+        },
+        {
+          "T08",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -464,8 +505,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_copy{*target, *from, next};
-          }},
-        {"T09",
+          },
+        },
+        {
+          "T09",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -479,8 +522,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_fill{*target, *from, next};
-          }},
-        {"T10",
+          },
+        },
+        {
+          "T10",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -494,8 +539,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_iota{*target, *from, next};
-          }},
-        {"T11",
+          },
+        },
+        {
+          "T11",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -509,8 +556,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_sum{*target, *from, next};
-          }},
-        {"T12",
+          },
+        },
+        {
+          "T12",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -524,9 +573,11 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_product{*target, *from, next};
-          }},
+          },
+        },
         // T13 does not exist
-        {"T14",
+        {
+          "T14",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -540,8 +591,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_add{*target, *from, next};
-          }},
-        {"T15",
+          },
+        },
+        {
+          "T15",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -555,8 +608,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_subtract{*target, *from, next};
-          }},
-        {"T16",
+          },
+        },
+        {
+          "T16",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -570,8 +625,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_multiply{*target, *from, next};
-          }},
-        {"T17",
+          },
+        },
+        {
+          "T17",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -585,8 +642,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_divide{*target, *from, next};
-          }},
-        {"T18",
+          },
+        },
+        {
+          "T18",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -600,8 +659,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_bulk_modulo{*target, *from, next};
-          }},
-        {"T19",
+          },
+        },
+        {
+          "T19",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -618,8 +679,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_vector_add{*target, *left, *right, next};
-          }},
-        {"T20",
+          },
+        },
+        {
+          "T20",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -636,8 +699,10 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_vector_subtract{*target, *left, *right, next};
-          }},
-        {"T21",
+          },
+        },
+        {
+          "T21",
           [](compile_result& result, std::size_t n, const char*& ptr, const char* start, const char* end) -> std::optional<state> {
             if (!expect_space(result, ptr, start))
               return std::nullopt;
@@ -654,7 +719,8 @@ namespace ud2::luogu3 {
             if (!~next || !expect_newline(result, ptr, start))
               return std::nullopt;
             return state_vector_multiply{*target, *left, *right, next};
-          }},
+          },
+        },
       };
       auto begin = ptr;
       while (*ptr && !is_separator(*ptr))
